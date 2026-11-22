@@ -1,0 +1,11 @@
+# Normalise line endings in the repository (LF), use the platform default on checkout
+* text=auto
+
+# Shell scripts must keep LF
+*.sh text eol=lf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.ico binary
+*.webp binary

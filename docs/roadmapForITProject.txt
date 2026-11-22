@@ -1,0 +1,150 @@
+1. Week 01: Course orientation and project choice
+Meeting length: 3 hours. The meeting combines review, guided technical work, project development, and a closing checkpoint.
+Workshop focus: Compare the ten topics, identify users and constraints, and choose an initial problem statement.
+In-class instructions:
+1. Review the project state and identify the most important question for this meeting.
+2. Compare the ten topics, identify users and constraints, and choose an initial problem statement.
+3. Work on the project and record decisions, code changes, and evidence in the repository or project notes.
+4. At the end, demonstrate the result and note the next action and any blocker.
+Expected evidence: A one-page project concept with objectives, intended users, proposed features, risks, and open questions.
+Related milestone: M1: Project Proposal and Scope. This is a course sequence label, not a due date.
+2. Week 02: Requirements and acceptance criteria
+Meeting length: 3 hours. The meeting combines review, guided technical work, project development, and a closing checkpoint.
+Workshop focus: Turn the concept into prioritized functional and non-functional requirements. Identify data, privacy, reliability, and performance concerns relevant to the topic.
+In-class instructions:
+1. Review the project state and identify the most important question for this meeting.
+2. Turn the concept into prioritized functional and non-functional requirements. Identify data, privacy, reliability, and performance concerns relevant to the topic.
+3. Work on the project and record decisions, code changes, and evidence in the repository or project notes.
+4. At the end, demonstrate the result and note the next action and any blocker.
+Expected evidence: A requirements list and acceptance criteria for the first usable version.
+Related milestone: M1: Project Proposal and Scope. This is a course sequence label, not a due date.
+3. Week 03: Algorithms and data structures
+Meeting length: 3 hours. The meeting combines review, guided technical work, project development, and a closing checkpoint.
+Workshop focus: Identify the computational core. Compare plausible algorithms and data structures by correctness, time and space complexity, and suitability for the chosen workload.
+In-class instructions:
+1. Review the project state and identify the most important question for this meeting.
+2. Identify the computational core. Compare plausible algorithms and data structures by correctness, time and space complexity, and suitability for the chosen workload.
+3. Work on the project and record decisions, code changes, and evidence in the repository or project notes.
+4. At the end, demonstrate the result and note the next action and any blocker.
+Expected evidence: An algorithm decision note with complexity analysis and a small test example.
+Related milestone: M2: Algorithm and Architecture Design. This is a course sequence label, not a due date.
+4. Week 04: System architecture
+Meeting length: 3 hours. The meeting combines review, guided technical work, project development, and a closing checkpoint.
+Workshop focus: Decompose the solution into modules and interfaces. Map data flow, external services, failure cases, and storage needs.
+In-class instructions:
+1. Review the project state and identify the most important question for this meeting.
+2. Decompose the solution into modules and interfaces. Map data flow, external services, failure cases, and storage needs.
+3. Work on the project and record decisions, code changes, and evidence in the repository or project notes.
+4. At the end, demonstrate the result and note the next action and any blocker.
+Expected evidence: Architecture diagram, interface sketch, and technology rationale.
+Related milestone: M2: Algorithm and Architecture Design. This is a course sequence label, not a due date.
+5. Week 05: Development environment and project skeleton
+Meeting length: 3 hours. The meeting combines review, guided technical work, project development, and a closing checkpoint.
+Workshop focus: Create the repository structure, setup instructions, configuration approach, and a minimal running path through the system.
+In-class instructions:
+1. Review the project state and identify the most important question for this meeting.
+2. Create the repository structure, setup instructions, configuration approach, and a minimal running path through the system.
+3. Work on the project and record decisions, code changes, and evidence in the repository or project notes.
+4. At the end, demonstrate the result and note the next action and any blocker.
+Expected evidence: A runnable skeleton with README and initial automated checks.
+Related milestone: M3: Working Prototype. This is a course sequence label, not a due date.
+6. Week 06: Core implementation I
+Meeting length: 3 hours. The meeting combines review, guided technical work, project development, and a closing checkpoint.
+Workshop focus: Implement the first vertical feature slice and connect it to the computational core. Record decisions and test behavior against acceptance criteria.
+In-class instructions:
+1. Review the project state and identify the most important question for this meeting.
+2. Implement the first vertical feature slice and connect it to the computational core. Record decisions and test behavior against acceptance criteria.
+3. Work on the project and record decisions, code changes, and evidence in the repository or project notes.
+4. At the end, demonstrate the result and note the next action and any blocker.
+Expected evidence: Demonstrable feature slice and focused tests.
+Related milestone: M3: Working Prototype. This is a course sequence label, not a due date.
+7. Week 07: Core implementation II and prototype review
+Meeting length: 3 hours. The meeting combines review, guided technical work, project development, and a closing checkpoint.
+Workshop focus: Extend the working prototype, review correctness and complexity, and obtain feedback on the design.
+In-class instructions:
+1. Review the project state and identify the most important question for this meeting.
+2. Extend the working prototype, review correctness and complexity, and obtain feedback on the design.
+3. Work on the project and record decisions, code changes, and evidence in the repository or project notes.
+4. At the end, demonstrate the result and note the next action and any blocker.
+Expected evidence: Prototype demonstration, limitations, and revised backlog.
+Related milestone: M3: Working Prototype. This is a course sequence label, not a due date.
+8. Week 08: Data and integration
+Meeting length: 3 hours. The meeting combines review, guided technical work, project development, and a closing checkpoint.
+Workshop focus: Integrate storage, APIs, or device inputs appropriate to the project. Handle invalid inputs and service failures.
+In-class instructions:
+1. Review the project state and identify the most important question for this meeting.
+2. Integrate storage, APIs, or device inputs appropriate to the project. Handle invalid inputs and service failures.
+3. Work on the project and record decisions, code changes, and evidence in the repository or project notes.
+4. At the end, demonstrate the result and note the next action and any blocker.
+Expected evidence: Integration path with reproducible test data or fixtures.
+Related milestone: M4: Integrated System. This is a course sequence label, not a due date.
+9. Week 09: User workflow and quality
+Meeting length: 3 hours. The meeting combines review, guided technical work, project development, and a closing checkpoint.
+Workshop focus: Complete the main end-to-end workflow. Review usability, accessibility where relevant, and error messages.
+In-class instructions:
+1. Review the project state and identify the most important question for this meeting.
+2. Complete the main end-to-end workflow. Review usability, accessibility where relevant, and error messages.
+3. Work on the project and record decisions, code changes, and evidence in the repository or project notes.
+4. At the end, demonstrate the result and note the next action and any blocker.
+Expected evidence: End-to-end scenario and documented issues.
+Related milestone: M4: Integrated System. This is a course sequence label, not a due date.
+10. Week 10: Integrated system review
+Meeting length: 3 hours. The meeting combines review, guided technical work, project development, and a closing checkpoint.
+Workshop focus: Demonstrate the connected system and trace each completed requirement to evidence. Identify remaining gaps.
+In-class instructions:
+1. Review the project state and identify the most important question for this meeting.
+2. Demonstrate the connected system and trace each completed requirement to evidence. Identify remaining gaps.
+3. Work on the project and record decisions, code changes, and evidence in the repository or project notes.
+4. At the end, demonstrate the result and note the next action and any blocker.
+Expected evidence: Integrated build, updated architecture, and requirement status.
+Related milestone: M4: Integrated System. This is a course sequence label, not a due date.
+11. Week 11: Testing strategy
+Meeting length: 3 hours. The meeting combines review, guided technical work, project development, and a closing checkpoint.
+Workshop focus: Design unit, integration, and performance checks appropriate to the system. Define representative and edge-case inputs.
+In-class instructions:
+1. Review the project state and identify the most important question for this meeting.
+2. Design unit, integration, and performance checks appropriate to the system. Define representative and edge-case inputs.
+3. Work on the project and record decisions, code changes, and evidence in the repository or project notes.
+4. At the end, demonstrate the result and note the next action and any blocker.
+Expected evidence: Test plan, test data, and automated test results.
+Related milestone: M5: Testing and Validation. This is a course sequence label, not a due date.
+12. Week 12: Performance and reliability
+Meeting length: 3 hours. The meeting combines review, guided technical work, project development, and a closing checkpoint.
+Workshop focus: Measure the critical algorithm or workflow, inspect bottlenecks, and improve a justified target. Test failure recovery where relevant.
+In-class instructions:
+1. Review the project state and identify the most important question for this meeting.
+2. Measure the critical algorithm or workflow, inspect bottlenecks, and improve a justified target. Test failure recovery where relevant.
+3. Work on the project and record decisions, code changes, and evidence in the repository or project notes.
+4. At the end, demonstrate the result and note the next action and any blocker.
+Expected evidence: Baseline and revised measurements with method and limitations.
+Related milestone: M5: Testing and Validation. This is a course sequence label, not a due date.
+13. Week 13: Validation and final fixes
+Meeting length: 3 hours. The meeting combines review, guided technical work, project development, and a closing checkpoint.
+Workshop focus: Run the full test suite, resolve high-priority defects, and collect evidence for each evaluation criterion.
+In-class instructions:
+1. Review the project state and identify the most important question for this meeting.
+2. Run the full test suite, resolve high-priority defects, and collect evidence for each evaluation criterion.
+3. Work on the project and record decisions, code changes, and evidence in the repository or project notes.
+4. At the end, demonstrate the result and note the next action and any blocker.
+Expected evidence: Validation report and release candidate.
+Related milestone: M5: Testing and Validation. This is a course sequence label, not a due date.
+14. Week 14: Final report and presentation rehearsal
+Meeting length: 3 hours. The meeting combines review, guided technical work, project development, and a closing checkpoint.
+Workshop focus: Explain the problem, architecture, algorithms, technology choices, tests, outcomes, and limitations. Rehearse a live demonstration.
+In-class instructions:
+1. Review the project state and identify the most important question for this meeting.
+2. Explain the problem, architecture, algorithms, technology choices, tests, outcomes, and limitations. Rehearse a live demonstration.
+3. Work on the project and record decisions, code changes, and evidence in the repository or project notes.
+4. At the end, demonstrate the result and note the next action and any blocker.
+Expected evidence: Draft report, slides or presentation outline, and demo checklist.
+Related milestone: M6: Final Delivery and Presentation. This is a course sequence label, not a due date.
+15. Week 15: Project presentations and reflection
+Meeting length: 3 hours. The meeting combines review, guided technical work, project development, and a closing checkpoint.
+Workshop focus: Present the working system, justify technical choices, show validation evidence, and discuss limitations and next steps.
+In-class instructions:
+1. Review the project state and identify the most important question for this meeting.
+2. Present the working system, justify technical choices, show validation evidence, and discuss limitations and next steps.
+3. Work on the project and record decisions, code changes, and evidence in the repository or project notes.
+4. At the end, demonstrate the result and note the next action and any blocker.
+Expected evidence: Final repository or build, report, presentation, and demonstration evidence.
+Related milestone: M6: Final Delivery and Presentation. This is a course sequence label, not a due date.
