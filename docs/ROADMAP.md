@@ -61,7 +61,7 @@ Design details (ground rules, architecture, algorithms, AI generation) are in th
 │   └── .env.development         defaults for `npm run dev` (API_GATEWAY_URL, dev sign-in bypass)
 ├── docs/ROADMAP.md              this file
 ├── README.md, LICENSE (MIT), .gitignore, .gitattributes
-└── planned: services/, libs/, infra/, config-repo/, postman/, deploy/, docs/report/
+└── planned: services/, libs/, infra/, config-repo/, postman/, docs/report/
 ```
 
 ### 1.3 Frontend features
@@ -145,7 +145,7 @@ The backend must implement these paths with the snake_case DTO shapes defined in
 | Order and cart service: adding and removing items, order placement and tracking | Placement: assigning lessons and homework to students and groups. Tracking: submission and grading. | classroom-service |
 | Review and rating service: ratings and reviews, aggregate rating shown with the product | *(optional)* Students rate a lesson after finishing it, and the average rating appears in the lesson list. | classroom-service → content-service |
 
-**Suggested technologies.** Spring Boot, Eureka, H2, Spring Cloud Gateway (or Netflix Zuul), Docker and Kubernetes. Another stack is allowed. PolSpeak follows the suggestion with current versions (see [2.6](#26-differences-from-the-versions-in-the-lab-sheet)).
+**Suggested technologies.** Spring Boot, Eureka, H2, Spring Cloud Gateway (or Netflix Zuul), Docker and Kubernetes. Another stack is allowed. PolSpeak follows the suggestion with current versions, except that it uses Docker Compose and no Kubernetes, and Kafka instead of RabbitMQ (see [2.6](#26-differences-from-the-versions-in-the-lab-sheet)).
 
 **Concepts.**
 
@@ -191,6 +191,7 @@ Collaboration is allowed, but the final code must be individual work.
 - [ ] `services/content-service`, the "Products" analogue, on PostgreSQL 17 (Docker) with Flyway migrations.
 - [ ] Entities `CurriculumTopic`, `Lesson` and `LessonVersion`, with CRUD and search by attributes (level, topic, status). This is the lab's "search based on product attributes".
 - [ ] A Caffeine cache on published-lesson and curriculum reads: `@EnableCaching`, `@Cacheable`, and `@CacheEvict` on update and delete. `recordStats` is exposed through Actuator metrics.
+- [ ] The cache is per instance (Caffeine, not Redis). That is fine while each service runs as a single instance. A short expiry (5–10 minutes) is the safety net, and the report states this limit.
 - [ ] JUnit/Mockito tests showing that the second read comes from the cache and that an update evicts it.
 - [ ] English seed data: an A1–C2 curriculum and 5–8 sample lessons.
 - [ ] A Postman folder `content-service`.
@@ -232,25 +233,25 @@ Collaboration is allowed, but the final code must be individual work.
 
 #### Lab 5: Inter-service communication (Steps 13 and 16)
 
-*Lab asks:* a "Notification" microservice connected to the "User" and "Orders" services through REST or RabbitMQ. In the lab, the notification service consumes events from RabbitMQ queues and prints them to the console.
+*Lab asks:* a "Notification" microservice connected to the "User" and "Orders" services through REST or RabbitMQ. In the lab, the notification service consumes events from RabbitMQ queues and prints them to the console. PolSpeak uses Kafka instead of RabbitMQ (to confirm: that the lab PDF's concept 5 allows another broker).
 
-- [ ] RabbitMQ 4 in Docker, with a topic exchange `polspeak.events` and queues and bindings per consumer.
+- [ ] Kafka (KRaft mode, one container in Docker), with one topic per event type (for example `user.registered`) and one consumer group per consuming service.
 - [ ] **User → Notification:** user-service publishes `user.registered`. notification-service prints it to the console (as in the lab) and stores a welcome notification.
 - [ ] **Orders → Notification:** classroom-service publishes these events, and notification-service turns them into notifications:
   - `lesson.assigned`
   - `homework.assigned`, `homework.submitted` and `homework.graded`
   - `schedule.*`
 - [ ] At least one synchronous REST call: classroom-service → user-service to create a student sign-in account.
-- [ ] Error handling, which is graded explicitly: timeouts, retries with backoff, dead-letter queues, idempotent consumers and a transactional outbox. No event may be lost or processed twice.
+- [ ] Error handling, which is graded explicitly: timeouts, retries with backoff, dead-letter topics, idempotent consumers and a transactional outbox. No event may be lost or processed twice.
 
-*Done when:* registering a user and assigning homework both produce notifications, and a poison message ends up in the dead-letter queue.
+*Done when:* registering a user and assigning homework both produce notifications, and a poison message ends up in the dead-letter topic.
 
 #### Lab 6: Containerization (Step 19, groundwork in Step 6)
 
 *Lab asks:* containerize the microservices with Docker so that they keep communicating inside the container environment.
 
 - [ ] One multi-stage Dockerfile per service (`maven:3.9-eclipse-temurin-21` → `eclipse-temurin:21-jre`), with a non-root user and a `HEALTHCHECK`, plus a standalone frontend image.
-- [ ] `infra/docker-compose.yml` with PostgreSQL, RabbitMQ, all services and the frontend, using `depends_on` with health conditions.
+- [ ] `infra/docker-compose.yml` with PostgreSQL, Kafka, all services and the frontend, using `depends_on` with health conditions.
 - [ ] Only the gateway port (8080) is published. Services talk over the Docker network through Eureka.
 
 *Done when:* `docker compose up --build` on a clean machine gives a working PolSpeak at `http://localhost:8080`.
@@ -264,7 +265,7 @@ The lab instructions describe concepts 7 and 9 in detail. Concepts 8 and 10–17
 *Lab asks:* Spring Cloud Config Server (or Consul KV), so that configuration changes need no redeployment.
 
 - [ ] `services/config-server` (`@EnableConfigServer`, port 8888) serving `config-repo/` from the native backend, mounted read-only.
-- [ ] Clients use `spring.config.import=optional:configserver:`, and Spring Cloud Bus over RabbitMQ refreshes them.
+- [ ] Clients use `spring.config.import=optional:configserver:`, and Spring Cloud Bus over Kafka refreshes them.
 - [ ] These settings can change at runtime: AI model and effort, token budget, CEFR thresholds, cache sizes and rate limits.
 
 *Done when:* a value changed in `config-repo/` and refreshed through `busrefresh` shows up in the API without a container restart.
@@ -292,18 +293,20 @@ The lab instructions describe concepts 7 and 9 in detail. Concepts 8 and 10–17
 
 #### Lab 10: Distributed tracing (Step 23)
 
-- [ ] Micrometer Tracing with Zipkin. The trace context travels through both HTTP and RabbitMQ headers.
+- [ ] Micrometer Tracing with Zipkin. The trace context travels through both HTTP and Kafka headers.
 
-*Done when:* one trace shows the whole path: gateway → ai-service → RabbitMQ → content-service → notification-service.
+*Done when:* one trace shows the whole path: gateway → ai-service → Kafka → content-service → notification-service.
 
 #### Lab 11: Event-driven architecture (Step 13)
 
 - [ ] An event catalogue with a versioned envelope ([Appendix B](#appendix-b--target-architecture)), a transactional outbox, and competing consumers for AI generation jobs.
 - [ ] Asynchronous generation: `generation.requested` → worker → `generation.completed` → AI draft → notification.
 
-*Done when:* the generate → draft → notify chain works end to end, even when RabbitMQ restarts in the middle.
+*Done when:* the generate → draft → notify chain works end to end, even when Kafka restarts in the middle.
 
 #### Lab 12: Load balancing (Steps 21 and 24)
+
+*Status: to be discussed.* Whether the project scales horizontally is not decided yet. Until then, each service is assumed to run as a single instance (this is why the Caffeine cache is acceptable).
 
 - [ ] Two or more instances of content-service and ai-service, with client-side load balancing through Eureka. The `X-Instance-Id` header shows which instance answered.
 - [ ] Stateful parts are made safe for several instances:
@@ -327,7 +330,7 @@ The lab instructions describe concepts 7 and 9 in detail. Concepts 8 and 10–17
   - latency and errors
   - cache hit rate
   - circuit breakers
-  - queue depth
+  - consumer lag
   - generation time
   - LLM tokens and cost
 - [ ] Structured JSON logs with trace and span ids. *(optional)* Loki.
@@ -342,11 +345,11 @@ The lab instructions describe concepts 7 and 9 in detail. Concepts 8 and 10–17
 
 #### Lab 16: Deployment and scaling (Steps 19 and 26)
 
-- [ ] `docker compose up --scale ai-service=2`.
-- [ ] Kubernetes manifests (kustomize) with probes, resource limits and a HorizontalPodAutoscaler, run on kind or minikube.
-- [ ] *(optional)* A public cloud VM.
+*Status: to be discussed.* Kubernetes and cloud deployment are out of scope; Docker Compose is the only deployment target. Whether to scale services out at all is not decided yet.
 
-*Done when:* the system runs on Kubernetes and a service scales out under load.
+- [ ] `docker compose up --scale ai-service=2`.
+
+*Done when:* to be discussed together with the scaling decision.
 
 #### Lab 17: Security best practices (Steps 7, 9, 12 and 24)
 
@@ -377,7 +380,7 @@ The lab instructions describe concepts 7 and 9 in detail. Concepts 8 and 10–17
 |---|---|
 | Functionality and completeness | Concepts 1–6, plus the PolSpeak features (Steps 7–17) |
 | Code quality and best practices | Layered services, validation, `ProblemDetail`, static analysis in CI (Step 6), tests in every step |
-| Inter-service communication and error handling | Lab 5 tasks, outbox, DLQs, idempotency, Resilience4j, the error-handling matrix (Step 5) |
+| Inter-service communication and error handling | Lab 5 tasks, outbox, dead-letter topics, idempotency, Resilience4j, the error-handling matrix (Step 5) |
 | Scalability and resilience | Labs 9, 12 and 16; the stateful-component table in the report |
 | Report | Deliverable 1, written step by step in `docs/report/` |
 
@@ -391,7 +394,7 @@ The lab instructions describe concepts 7 and 9 in detail. Concepts 8 and 10–17
 | `bootstrap.properties` | `spring.config.import=optional:configserver:` |
 | `RestTemplate` | `@LoadBalanced RestClient` |
 | Jackson 2 packages | Jackson 3 (`tools.jackson`) in Spring Boot 4 |
-| `openjdk:20`, `frodenas/postgresql`, `rabbitmq:3-management` images | `eclipse-temurin:21-jre`, `postgres:17`, `rabbitmq:4-management` |
+| `openjdk:20`, `frodenas/postgresql`, `rabbitmq:3-management` images | `eclipse-temurin:21-jre`, `postgres:17`, `apache/kafka` (KRaft) |
 | `spring.datasource.initialization-mode` | Flyway migrations |
 
 ---
@@ -488,15 +491,14 @@ The lab instructions describe concepts 7 and 9 in detail. Concepts 8 and 10–17
 
 - [ ] One ADR per technology choice, listing the alternatives that were considered (Step 5):
   - Spring Boot microservices vs. a monolith
-  - PostgreSQL
-  - RabbitMQ vs. Kafka
+  - PostgreSQL (one database, one schema per service)
+  - Kafka vs. RabbitMQ (Kafka chosen)
   - an in-house search engine vs. Elasticsearch
-  - Caffeine vs. Redis
+  - Caffeine vs. Redis (Caffeine chosen: one instance per service)
   - Claude with structured outputs
   - WebSocket/STOMP
   - Resilience4j
   - Zipkin, Prometheus and Grafana
-  - Eureka vs. Kubernetes DNS
 
 #### Innovation and creativity (10%)
 
@@ -522,8 +524,7 @@ The lab instructions describe concepts 7 and 9 in detail. Concepts 8 and 10–17
 #### Bonus (up to +10%)
 
 - [ ] Containerization: Docker Compose for the whole system (Step 19).
-- [ ] CI/CD: GitHub Actions, test → image → deploy (Steps 6 and 26).
-- [ ] *(optional)* Deployment to a public cloud (Step 26).
+- [ ] CI/CD: GitHub Actions, test → image (Steps 6 and 26).
 
 ### 3.3 Weekly evidence (W1–W15)
 
@@ -554,11 +555,11 @@ Each workshop expects a specific piece of evidence. The table maps each one to i
 | Work | Microservices lab | IT Project |
 |---|---|---|
 | Service decomposition, Eureka, gateway | Labs 1–4 | System design 20%, functional completeness 15% |
-| RabbitMQ events, outbox, notification-service | Labs 5 and 11 | System design; failure handling (W8) |
+| Kafka events, outbox, notification-service | Labs 5 and 11 | System design; failure handling (W8) |
 | AI generation (asynchronous jobs, resilience) | Labs 5, 9 and 11 | The topic itself, innovation 10%, algorithms A3, A7 and A8 |
 | search-service | Lab 11 (event consumer) | Algorithms A1, A2 and A8 |
 | Docker Compose | Lab 6 | Bonus |
-| CI/CD, Kubernetes, cloud | Lab 16 | Bonus |
+| CI/CD and Docker images | Lab 16 | Bonus |
 | Tests, Postman and Newman | Lab 13, Postman deliverable | Testing and validation 10% |
 | Resilience and failover | Lab 9 | Performance and reliability (W12) |
 | Tracing, metrics, dashboards | Labs 10 and 14 | Measurements (W12) |
@@ -576,7 +577,7 @@ Each workshop expects a specific piece of evidence. The table maps each one to i
 |---|---|---|
 | Microservices lab | Steps 0–13, 16 and 19 (lab concepts 1–6), the Postman collection, the lab report | Steps 20 (lab 7), 21 (9), 22 (13), 23 (10, 14), 24 (12, 15, 17), 26 (16) |
 | IT Project | Steps 3–5, 8–11 and 14–15 (algorithms A1, A2, A4, A5, A8), the core of Step 22, Step 25 (benchmarks and A3 accuracy), Step 27 | More depth for A6 and A7; optional AI features |
-| Product scope | Step 16 (students, groups, homework, schedule) and Step 17 (messaging) | Live lessons, TOTP, API v2, Kubernetes and cloud, central log aggregation, contract tests |
+| Product scope | Step 16 (students, groups, homework, schedule) and Step 17 (messaging) | Live lessons, TOTP, API v2, central log aggregation, contract tests |
 
 ---
 
@@ -631,8 +632,8 @@ Each step names the lab concepts (**Lab**) and IT Project criteria or workshops 
   - C4 diagrams (Mermaid) and sequence diagrams
   - wireframes of the new screens: the generate-with-AI dialog, the version/diff panel, search and notifications
   - data ownership and the `/api/v1` contracts
-  - the **inter-service error-handling matrix**: for every REST call and event, the timeout, retry, circuit breaker, fallback, DLQ, idempotency key and user-visible message
-- `docs/adr/`: the choices listed under 3.2 "Use of appropriate technologies", plus database per service, JWT cookie + CSRF, file storage, Flyway, and native vs. git configuration.
+  - the **inter-service error-handling matrix**: for every REST call and event, the timeout, retry, circuit breaker, fallback, dead-letter topic, idempotency key and user-visible message
+- `docs/adr/`: the choices listed under 3.2 "Use of appropriate technologies", plus one schema per service, JWT cookie + CSRF, file storage, Flyway, and native vs. git configuration.
 - *Done when:* the diagrams, the matrix and the ADRs are reviewed.
 
 ### Phase C: Skeleton and first vertical slice (M3)
@@ -642,7 +643,7 @@ Each step names the lab concepts (**Lab**) and IT Project criteria or workshops 
 - A Maven parent POM with the Java 21, Spring Boot 4.x and Spring Cloud 2025.1.x BOMs.
 - The ten services under `services/`, and `libs/common` with the event envelope, outbox, `ProblemDetail` and security helpers.
 - `infra/docker-compose.yml` with four profiles:
-  - `infra`: PostgreSQL 17 with one database and user per service, and RabbitMQ 4
+  - `infra`: PostgreSQL 17 (one database, one schema and one restricted user per service), and Kafka (KRaft)
   - `ops`: admin UIs, bound to 127.0.0.1
   - `docker`
   - `seed`
@@ -723,20 +724,20 @@ Each step names the lab concepts (**Lab**) and IT Project criteria or workshops 
   - oversized file → 413
   - wrong MIME type → 415
 
-**Step 13: RabbitMQ, outbox and notification-service** · Lab: 5, 11 · IT: W8
+**Step 13: Kafka, outbox and notification-service** · Lab: 5, 11 · IT: W8
 
-- The Lab 5 (User → Notification) and Lab 11 checklists, with publisher confirms.
+- The Lab 5 (User → Notification) and Lab 11 checklists, with producer `acks=all`.
 - `GET /api/v1/notifications` and mark-as-read.
 - WebSocket/STOMP delivery to `/user/queue/notifications`, with a JWT check on CONNECT.
 - *Done when:*
   - creating a user in Postman produces the console line and a stored notification
   - generate → draft → notify works
-  - a poison message reaches the DLQ
-  - a Testcontainers test stops RabbitMQ between commit and publish, and the event is still delivered
+  - a poison message reaches the dead-letter topic
+  - a Testcontainers test stops Kafka between commit and publish, and the event is still delivered
 
 **Step 14: search-service** · IT: A1, A2, A8 · Lab: 11
 
-- An in-memory index fed by `lesson.*` events (one queue per instance) and rebuilt from content-service on start-up.
+- An in-memory index fed by `lesson.*` events (one consumer group per instance) and rebuilt from content-service on start-up.
 - Endpoints: `GET /search`, `POST /search/similar` and `POST /search/near-duplicates`.
 - ai-service uses search for RAG (A8) and for quality gate v2 (near-duplicates). If search is down, ai-service generates without context.
 - A search box in the lessons and library pages.
@@ -763,7 +764,6 @@ Each step names the lab concepts (**Lab**) and IT Project criteria or workshops 
 
 - Conversations with attachments (media-service), voice notes, read receipts and unread counts.
 - Messages are sent over REST and delivered on `/user/queue/messages`, which replaces the polling.
-- A RabbitMQ STOMP relay is required as soon as notification-service runs more than one instance.
 - *(optional)* Live lessons on `/topic/live.{id}`, for invitees only.
 - *Done when:* two browsers exchange messages instantly and unauthorized subscriptions are rejected.
 
@@ -822,11 +822,11 @@ Each step names the lab concepts (**Lab**) and IT Project criteria or workshops 
 - Baseline → change → revised experiments, each with its method and limitations:
   - the lesson list before and after the summary projection and cache (k6 p50/p95/p99)
   - generation before and after prompt caching (tokens and cost)
-  - scaling with the number of replicas
+  - scaling with the number of replicas *(to be discussed)*
 - The AI pipeline on about 20 real generations: success rate, average attempts, CEFR fit and cost per lesson; 10 lessons rated with a human rubric.
 - Failure recovery:
   - kill ai-service mid-job: no duplicate drafts, and the recovery time is measured
-  - restart RabbitMQ
+  - restart Kafka
   - simulate LLM 5xx errors
 - `docs/07-performance.md` and `docs/08-validation.md`.
 - Publish the images to GHCR and tag `v1.0.0-rc1`.
@@ -834,14 +834,11 @@ Each step names the lab concepts (**Lab**) and IT Project criteria or workshops 
 
 ### Phase F: Delivery (M6)
 
-**Step 26: CI/CD, Kubernetes and optional cloud** · Lab: 16 · IT: bonus
+**Step 26: CI/CD and Docker delivery** · Lab: 16 · IT: bonus
 
-- GitHub Actions: test → GHCR → (optional) deploy.
-- `deploy/k8s/` with kustomize, probes, resource limits and an HPA for ai-service and content-service, run on kind or minikube.
-- The report discusses Eureka vs. Kubernetes DNS.
-- *(optional)* A VM with Docker Compose and Caddy (HTTPS). A public demo uses the mock AI provider or a small budget.
+- GitHub Actions: test → build images → push to GHCR. Docker Compose is the only deployment target.
 - Tag `rc2` if anything changed.
-- *Done when:* the pipeline deploys to the Kubernetes cluster.
+- *Done when:* the pipeline builds, tests and pushes the images on every push to `main`.
 
 **Step 27: Reports, presentations and final release** · Lab: all deliverables · IT: presentation, W14–W15
 
@@ -885,12 +882,12 @@ Browser ───────────────  │ /            → fron
                          └─────────────────────────────────────────────────────────────┘
  user (:8081) · content (:8082, Caffeine) · ai (:8083 → Claude API) · search (:8084)
  media (:8085 → volume) · classroom (:8086) · notification (:8087, WebSocket/STOMP)
- discovery-server (:8761) · config-server (:8888) · PostgreSQL 17 (one database per service)
- RabbitMQ 4 (topic exchange polspeak.events)
- ops profile (127.0.0.1 only): Eureka 8761, RabbitMQ 15672, Zipkin 9411, Prometheus 9090, Grafana 3001
+ discovery-server (:8761) · config-server (:8888) · PostgreSQL 17 (one database, one schema per service)
+ Kafka (KRaft; one topic per event type)
+ ops profile (127.0.0.1 only): Eureka 8761, Zipkin 9411, Prometheus 9090, Grafana 3001
 ```
 
-**Stack:** Java 21, Spring Boot 4.x with Spring Cloud 2025.1.x (Oakwood), Maven multi-module; PostgreSQL 17 with Flyway; RabbitMQ 4; Next.js 16 frontend.
+**Stack:** Java 21, Spring Boot 4.x with Spring Cloud 2025.1.x (Oakwood), Maven multi-module; PostgreSQL 17 with Flyway; Kafka (KRaft); Next.js 16 frontend.
 
 | Service | Responsibility | Lab |
 |---|---|---|
@@ -915,22 +912,23 @@ Browser ───────────────  │ /            → fron
 
 **Data.**
 
-- One database and one least-privilege user per service, in a single PostgreSQL container. Each service owns its Flyway migrations.
+- One PostgreSQL container with a single database and one schema per service (`users`, `content`, `classroom`, and so on). Each service has its own least-privilege user, restricted to its schema, and owns its Flyway migrations and `default-schema`.
+- No cross-schema joins or foreign keys. Services refer to each other only by ID and fetch data through the API or events.
 - Every content and classroom entity carries an `ownerId` (the teacher), which removes the original single-teacher assumption.
 - Seed data is loaded through `R__demo_seed.sql` or `@Profile("demo")` loaders.
 
 **Events.**
 
-- Topic exchange `polspeak.events`, with the envelope `{eventId, type, version, occurredAt, producer, payload}`.
-- user-, content- and classroom-service use a **mandatory transactional outbox**. The relay uses `SELECT … FOR UPDATE SKIP LOCKED` and RabbitMQ publisher confirms.
-- Every queue has a dead-letter queue and exponential retry, and consumers are idempotent (`processed_events`).
+- One Kafka topic per event type (key = aggregate id, to keep order per entity), with the envelope `{eventId, type, version, occurredAt, producer, payload}`.
+- user-, content- and classroom-service use a **mandatory transactional outbox**. The relay uses `SELECT … FOR UPDATE SKIP LOCKED` and Kafka producer acks (`acks=all`, idempotent producer).
+- Every consumer has a dead-letter topic (`<topic>.DLT`) and exponential retry, and consumers are idempotent (`processed_events`).
 
 | Event | Producer → consumers |
 |---|---|
 | `user.registered` | user → notification (console log + welcome notification) |
 | `generation.requested` | ai → ai workers (competing consumers) |
 | `generation.completed` / `.failed` | ai → content (creates the AI draft version), notification |
-| `lesson.draft-created`, `lesson.published` / `.updated` / `.archived` | content → search (one queue per instance), notification, other content instances (cache invalidation) |
+| `lesson.draft-created`, `lesson.published` / `.updated` / `.archived` | content → search (one consumer group per instance), notification, other content instances (cache invalidation) |
 | `lesson.assigned` / `.unassigned` | classroom → content (access grant), notification |
 | `homework.assigned` / `.submitted` / `.graded` / `.due-soon` | classroom → notification |
 | `schedule.lesson-created` / `.cancelled` | classroom → notification |
